@@ -76,3 +76,46 @@ def check_port_range(target: str, start_port: int, end_port: int, timeout: float
     if end_port - start_port + 1 > 100:
         raise ValueError("For safety, check no more than 100 ports per request.")
     return [check_port(target, port, timeout) for port in range(start_port, end_port + 1)]
+
+def check_local_port(port, host="127.0.0.1"):
+    """
+    Check whether a TCP port can be bound locally.
+
+    Returns a dictionary containing status and details.
+    """
+    if not isinstance(port, int) or isinstance(port, bool):
+        return {
+            "status": "ERROR",
+            "message": "Port must be an integer."
+        }
+
+    if not 1 <= port <= 65535:
+        return {
+            "status": "ERROR",
+            "message": "Port must be between 1 and 65535."
+        }
+
+    try:
+        with socket.socket(
+            socket.AF_INET, socket.SOCK_STREAM
+        ) as sock:
+            sock.bind((host, port))
+
+        return {
+            "status": "FREE",
+            "message": f"Port {port} is available on {host}."
+        }
+
+    except OSError as exc:
+        # Windows: WSAEADDRINUSE = 10048
+        # POSIX: EADDRINUSE = 98 on Linux, commonly
+        if getattr(exc, "errno", None) in (98, 48, 10048):
+            return {
+                "status": "BUSY",
+                "message": f"Port {port} is already in use."
+            }
+
+        return {
+            "status": "ERROR",
+            "message": f"Unable to check port: {exc}"
+        }

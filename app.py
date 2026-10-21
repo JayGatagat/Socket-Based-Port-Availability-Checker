@@ -1,5 +1,7 @@
 from flask import Flask, render_template, request
 from port_checker import check_port, check_port_range, validate_target, validate_port
+from flask import request, render_template
+from port_checker import check_local_port
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = "development-only-change-me"
@@ -60,6 +62,32 @@ def range_check():
     except (ValueError, OSError) as exc:
         return render_template("index.html", result=None, results=None, summary=None, error=str(exc)), 400
 
+@app.route("/local-port-check", methods=["GET", "POST"])
+def local_port_check():
+    result = None
+    port_value = ""
+
+    if request.method == "POST":
+        port_value = request.form.get("port", "").strip()
+
+        try:
+            if not port_value.isdigit():
+                raise ValueError("Enter a valid port number.")
+
+            port = int(port_value)
+            result = check_local_port(port)
+
+        except ValueError as exc:
+            result = {
+                "status": "ERROR",
+                "message": str(exc)
+            }
+
+    return render_template(
+        "local_port.html",
+        result=result,
+        port=port_value
+    )
 
 if __name__ == "__main__":
     # Local development server. Do not expose this demo app to the public internet.

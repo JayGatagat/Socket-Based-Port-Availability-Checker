@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Local Port Availability Checker</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 60px auto;
+            padding: 20px;
+            background: #f4f6f9;
+            color: #222;
+        }
+
+        .panel {
+            background: white;
+            padding: 28px;
+            border-radius: 12px;
+            box-shadow: 0 4px 16px #0001;
+        }
+
+        input, button {
+            box-sizing: border-box;
+            width: 100%;
+            padding: 12px;
+            margin-top: 12px;
+            border-radius: 6px;
+            font-size: 16px;
+        }
+
+        input {
+            border: 1px solid #ccc;
+        }
+
+        button {
+            background: #2563eb;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        .result {
+            margin-top: 20px;
+            padding: 14px;
+            border-radius: 6px;
+        }
+
+        .FREE { background: #dcfce7; color: #166534; }
+        .BUSY { background: #fee2e2; color: #991b1b; }
+        .ERROR { background: #fef3c7; color: #92400e; }
+    </style>
+</head>
+<body>
+    <div class="panel">
+        <h1>Local Port Checker</h1>
+        <p>Check whether a TCP port can be bound on your computer.</p>
+
+        <form method="POST">
+            <label for="port">Port number (1–65535)</label>
+            <input
+                id="port"
+                name="port"
+                type="number"
+                min="1"
+                max="65535"
+                required
+                value="{{ port }}"
+                placeholder="e.g. 5000"
+            >
+            <button type="submit">Check Port</button>
+        </form>
+
+        {% if result %}
+        <div class="result {{ result.status }}">
+            <strong>{{ result.status }}</strong>
+            <p>{{ result.message }}</p>
+        </div>
+        {% endif %}
+
+        <p><a href="/">Back to Port Checker</a></p>
+    </div>
+</body>
+</html>
