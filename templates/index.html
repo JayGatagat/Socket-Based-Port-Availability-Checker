@@ -1,3 +1,4 @@
+
 <!doctype html>
 <html lang="en">
 <head>
@@ -7,62 +8,117 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
+
 <header class="hero">
   <div class="eyebrow">COMPUTER NETWORKS • PYTHON SOCKETS</div>
   <h1>Socket-Based Port Availability Checker</h1>
   <p>Test TCP connectivity on localhost or a private network host you are authorized to check.</p>
 </header>
+
 <main>
-  <section class="notice"><strong>Responsible use:</strong> This educational demo only permits localhost/private-network targets. A timeout does not prove a port is closed.</section>
-  {% if error %}<section class="error" role="alert">{{ error }}</section>{% endif %}
+  <section class="notice">
+    <strong>Responsible use:</strong>
+    This educational demo only permits localhost/private-network targets.
+    A timeout does not prove a port is closed.
+  </section>
+
+  {% if error %}
+  <section class="error" role="alert">{{ error }}</section>
+  {% endif %}
+
+  <!-- LOCAL PORT CHECKER -->
+  <section class="panel local-panel">
+    <h2>Local Port Checker</h2>
+    <p>Check whether a TCP port can be bound on your own computer.</p>
+    <a href="{{ url_for('local_port_check') }}" class="local-port-button">
+      Open Local Port Checker →
+    </a>
+  </section>
+
   <div class="grid">
+
+    <!-- SINGLE PORT CHECK -->
     <section class="panel">
       <h2>Check one port</h2>
+
       <form method="post" action="{{ url_for('check') }}">
         <label>Target hostname or IP
-          <input name="target" required placeholder="127.0.0.1" value="{{ request.form.get('target', '127.0.0.1') }}">
+          <input name="target" required placeholder="127.0.0.1"
+                 value="{{ request.form.get('target', '127.0.0.1') }}">
         </label>
+
         <label>TCP port (1–65535)
-          <input name="port" type="number" min="1" max="65535" required placeholder="5001" value="{{ request.form.get('port', '5001') }}">
+          <input name="port" type="number" min="1" max="65535"
+                 required placeholder="5001"
+                 value="{{ request.form.get('port', '5001') }}">
         </label>
+
         <label>Timeout in seconds (0.1–5)
-          <input name="timeout" type="number" min="0.1" max="5" step="0.1" value="{{ request.form.get('timeout', '1.0') }}">
+          <input name="timeout" type="number" min="0.1" max="5"
+                 step="0.1"
+                 value="{{ request.form.get('timeout', '1.0') }}">
         </label>
+
         <button type="submit">Check port</button>
       </form>
     </section>
+
+    <!-- PORT RANGE CHECK -->
     <section class="panel">
       <h2>Check a small port range</h2>
+
       <form method="post" action="{{ url_for('range_check') }}">
         <label>Target hostname or IP
-          <input name="target" required placeholder="127.0.0.1" value="{{ request.form.get('target', '127.0.0.1') }}">
+          <input name="target" required placeholder="127.0.0.1"
+                 value="{{ request.form.get('target', '127.0.0.1') }}">
         </label>
+
         <div class="two">
           <label>Start port
-            <input name="start_port" type="number" min="1" max="65535" required value="{{ request.form.get('start_port', '5000') }}">
+            <input name="start_port" type="number" min="1" max="65535"
+                   required
+                   value="{{ request.form.get('start_port', '5000') }}">
           </label>
+
           <label>End port
-            <input name="end_port" type="number" min="1" max="65535" required value="{{ request.form.get('end_port', '5010') }}">
+            <input name="end_port" type="number" min="1" max="65535"
+                   required
+                   value="{{ request.form.get('end_port', '5010') }}">
           </label>
         </div>
+
         <label>Timeout per port (0.1–3)
-          <input name="timeout" type="number" min="0.1" max="3" step="0.1" value="{{ request.form.get('timeout', '0.5') }}">
+          <input name="timeout" type="number" min="0.1" max="3"
+                 step="0.1"
+                 value="{{ request.form.get('timeout', '0.5') }}">
         </label>
+
         <button type="submit">Check range</button>
         <p class="hint">Maximum 100 ports per request.</p>
       </form>
     </section>
   </div>
+
+  <!-- SINGLE PORT RESULT -->
   {% if result %}
   <section class="panel result">
     <h2>Result</h2>
-    <div class="result-line"><span class="status {{ result.status|lower }}">{{ result.status }}</span><strong>{{ result.target }} : {{ result.port }}</strong></div>
-    <p>{{ result.detail }}</p><p><strong>Connection attempt time:</strong> {{ result.latency_ms }} ms</p>
+
+    <div class="result-line">
+      <span class="status {{ result.status|lower }}">{{ result.status }}</span>
+      <strong>{{ result.target }} : {{ result.port }}</strong>
+    </div>
+
+    <p>{{ result.detail }}</p>
+    <p><strong>Connection attempt time:</strong> {{ result.latency_ms }} ms</p>
   </section>
   {% endif %}
+
+  <!-- RANGE RESULTS -->
   {% if results is not none %}
   <section class="panel">
     <h2>Range results</h2>
+
     {% if summary %}
     <div class="stats">
       <div><span>Checked</span><strong>{{ summary.checked }}</strong></div>
@@ -72,10 +128,37 @@
       <div><span>Total attempt time</span><strong>{{ summary.total_ms }} ms</strong></div>
     </div>
     {% endif %}
-    <div class="table-wrap"><table><thead><tr><th>Port</th><th>Status</th><th>Latency</th><th>Details</th></tr></thead>
-    <tbody>{% for item in results %}<tr><td>{{ item.port }}</td><td><span class="status {{ item.status|lower }}">{{ item.status }}</span></td><td>{{ item.latency_ms }} ms</td><td>{{ item.detail }}</td></tr>{% endfor %}</tbody></table></div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Port</th>
+            <th>Status</th>
+            <th>Latency</th>
+            <th>Details</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in results %}
+          <tr>
+            <td>{{ item.port }}</td>
+            <td>
+              <span class="status {{ item.status|lower }}">
+                {{ item.status }}
+              </span>
+            </td>
+            <td>{{ item.latency_ms }} ms</td>
+            <td>{{ item.detail }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
   </section>
   {% endif %}
+
+  <!-- PROJECT EXPLANATION -->
   <section class="panel">
     <h2>How it works</h2>
     <ol>
@@ -83,9 +166,15 @@
       <li>Python opens a TCP socket and attempts a connection with a timeout.</li>
       <li>The application reports Open, Closed, Timeout, or Error and records elapsed time.</li>
     </ol>
-    <p class="hint">This checks TCP connection availability, not UDP ports or whether an application is functioning correctly.</p>
+    <p class="hint">
+      This checks TCP connection availability, not UDP ports or whether an
+      application is functioning correctly.
+    </p>
   </section>
+
 </main>
+
 <footer>Student project demo • Flask + Python socket • Run locally</footer>
+
 </body>
 </html>
